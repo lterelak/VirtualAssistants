@@ -1,0 +1,12 @@
+<html>
+    <body>
+        {% for assistant in detail_virtual_assistant %}
+            <p>{{ assistant.name }}</p>
+            <p>{{assistant.last_name}}</p>
+            <p>{{assistant.image_url}}</p>
+            <p>{{assistant.job}}</p>
+            <p><img  class="img-responsive watch-right" alt="not found" src="{{assistant.image_url}}"/></p>
+        {% endfor %}
+    </body>
+</html>
+

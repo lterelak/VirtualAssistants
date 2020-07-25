@@ -1,0 +1,20 @@
+<html>
+    <body>
+        <form method="POST"  enctype="multipart/form-data">
+            {{ form.csrf_token }}
+            {{ form.name }}</br></br>
+            {{ form.last_name }}</br></br>
+            {{ form.job }}</br></br>
+            {{ form.photo }}</br></br>
+            <button type="submit">Add assistant</button>
+        </form>
+
+            {% for assistant in virtual_assistants %}
+              <p><a href="{{ url_for("detail_virtual_assistant", id=assistant.id) }}">{{assistant.name}}</a></p>
+              <p>{{assistant.last_name}}</p>
+              <p>{{assistant.image_url}}</p>
+              <p>{{assistant.job}}</p>
+              <p><img  class="img-responsive watch-right" alt="not found" src="{{assistant.image_url}}"/></p>
+            {% endfor %}
+    </body>
+</html>
