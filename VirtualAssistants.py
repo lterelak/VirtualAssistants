@@ -114,7 +114,7 @@ def add_virtual_assistant():
 @app.route("/update/<int:id>/", methods=["GET", "POST"])
 def update_virtual_assistant(id):
     cached_data = cache_json_data()
-    updated_virtual_assistant = VirtualAssistant.query.get(id)
+    updated_virtual_assistant = VirtualAssistant.query.get_or_404(id)
     form = UpdateVirtualAssistant(obj=updated_virtual_assistant)
     form.job.choices = list(enumerate([i["title"] for i in cached_data if "title" in i], 1))
     if request.method == "POST":
@@ -125,6 +125,7 @@ def update_virtual_assistant(id):
             path = "C:\\Users\\Luiza\\VirtualAssistants\\static\\img\\" + filename
             resize_photo(path)
             form.populate_obj(updated_virtual_assistant)
+
             db.session.commit()
             return redirect("/")
         else:
