@@ -88,6 +88,7 @@ def cache_json_data():
 @app.route("/", methods=["GET", "POST"])
 def add_virtual_assistant():
     cached_data = cache_json_data()
+    virtual_assistants = VirtualAssistant.query.all()
     form = AddVirtualAssistant()
     form.job.choices = list(enumerate([i["title"] for i in cached_data if "title" in i], 1))
 
@@ -106,26 +107,31 @@ def add_virtual_assistant():
             print(form.errors.items())
             return "something is wrong"
 
-    virtual_assistants = VirtualAssistant.query.all()
+
     return render_template("AddVirtualAssistant.html", form=form, virtual_assistants=virtual_assistants)
 
 
-
-@app.route("/update/<int:id>/", methods=["GET", "POST", "PUT"])
-def detail_virtual_assistant(id):
+@app.route("/update/<int:id>/", methods=["GET", "POST"])
+def update_virtual_assistant(id):
     cached_data = cache_json_data()
-    detail_virtual_assistant = VirtualAssistant.query.filter_by(id=id)
-    form = UpdateVirtualAssistant(obj=detail_virtual_assistant)
+    updated_virtual_assistant = VirtualAssistant.query.get(id)
+    form = UpdateVirtualAssistant(obj=updated_virtual_assistant)
     form.job.choices = list(enumerate([i["title"] for i in cached_data if "title" in i], 1))
     if request.method == "POST":
         if form.validate_on_submit():
-            form.populate_obj(detail_virtual_assistant)
+            photo = request.files["photo"]
+            filename = photos.save(form.photo.data)
+            url = photos.url(filename)
+            path = "C:\\Users\\Luiza\\VirtualAssistants\\static\\img\\" + filename
+            resize_photo(path)
+            form.populate_obj(updated_virtual_assistant)
             db.session.commit()
             return redirect("/")
         else:
             print(form.errors.items())
             return "something is wrong"
-    return render_template("UpdateVirtualAssistant.html", detail_virtual_assistant=detail_virtual_assistant, form=form)
+    return render_template("UpdateVirtualAssistant.html", updated_virtual_assistant=updated_virtual_assistant, form=form)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
