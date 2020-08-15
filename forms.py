@@ -15,3 +15,4 @@ class AddVirtualAssistant(FlaskForm):
 
 class UpdateVirtualAssistant(AddVirtualAssistant):
     id = IntegerField("id", validators=[DataRequired()])
+    photo = FileField()
