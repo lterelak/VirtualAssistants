@@ -91,6 +91,7 @@ def add_virtual_assistant():
     virtual_assistants = VirtualAssistant.query.all()
     form = AddVirtualAssistant()
     form.job.choices = list(enumerate([i["title"] for i in cached_data if "title" in i], 1))
+    job_title = dict(form.job.choices).get(form.job.data)
 
     if request.method == "POST":
          if form.validate_on_submit():
@@ -99,7 +100,7 @@ def add_virtual_assistant():
             url = photos.url(filename)
             path = "C:\\Users\\Luiza\\VirtualAssistants\\static\\img\\" + filename
             resize_photo(path)
-            new_virtual_assistant = VirtualAssistant(name=form.name.data, last_name= form.last_name.data, job=form.job.data, image_filename=filename, image_url=url)
+            new_virtual_assistant = VirtualAssistant(name=form.name.data, last_name= form.last_name.data, job=job_title, image_filename=filename, image_url=url)
             db.session.add(new_virtual_assistant)
             db.session.commit()
             return "new virtual assistant has been added"
@@ -111,6 +112,32 @@ def add_virtual_assistant():
     return render_template("AddVirtualAssistant.html", form=form, virtual_assistants=virtual_assistants)
 
 
+@app.route("/update/<int:id>/", methods=["GET", "POST"])
+def update_virtual_assistant(id):
+    cached_data = cache_json_data()
+    updated_virtual_assistant = VirtualAssistant.query.get_or_404(id)
+    form = UpdateVirtualAssistant(obj=updated_virtual_assistant)
+    form.job.choices = list(enumerate([i["title"] for i in cached_data if "title" in i], 1))
+    job_title = dict(form.job.choices).get(form.job.data)
+    if request.method == "POST":
+        if form.validate_on_submit():
+            form.populate_obj(updated_virtual_assistant)
+            if "photo" in request.files:
+                photo = request.files["photo"]
+                filename = photos.save(form.photo.data)
+                url = photos.url(filename)
+                path = "C:\\Users\\Luiza\\VirtualAssistants\\static\\img\\" + filename
+                resize_photo(path)
+                updated_virtual_assistant.image_url = url
+                updated_virtual_assistant.image_filename = filename
+                updated_virtual_assistant.job = job_title
+            db.session.commit()
+            return redirect("/")
+        else:
+            print(form.errors.items())
+            return "something is wrong"
+    return render_template("UpdateVirtualAssistant.html", updated_virtual_assistant=updated_virtual_assistant, form=form)
+
 # @app.route("/update/<int:id>/", methods=["GET", "POST"])
 # def update_virtual_assistant(id):
 #     cached_data = cache_json_data()
@@ -120,41 +147,22 @@ def add_virtual_assistant():
 #     if request.method == "POST":
 #         if form.validate_on_submit():
 #             form.populate_obj(updated_virtual_assistant)
-#             photo = request.files["photo"]
-#             filename = photos.save(form.photo.data)
-#             url = photos.url(filename)
+#             updated_virtual_assistant.name = form.name.data
+#             updated_virtual_assistant.last_name = form.last_name.data
+#             updated_virtual_assistant.job = form.job.data
+#             if "photo" in request.files:
+#                 photo = request.files["photo"]
+#                 filename = photos.save(form.photo.data)
+#                 url = photos.url(filename)
+#                 updated_virtual_assistant.image_url = url
+#                 updated_virtual_assistant.image_filename = filename
+#             db.session.add(updated_virtual_assistant)
 #             db.session.commit()
 #             return redirect("/")
 #         else:
 #             print(form.errors.items())
 #             return "something is wrong"
 #     return render_template("UpdateVirtualAssistant.html", updated_virtual_assistant=updated_virtual_assistant, form=form)
-
-@app.route("/update/<int:id>/", methods=["GET", "POST"])
-def update_virtual_assistant(id):
-    cached_data = cache_json_data()
-    updated_virtual_assistant = VirtualAssistant.query.get_or_404(id)
-    form = UpdateVirtualAssistant(obj=updated_virtual_assistant)
-    form.job.choices = list(enumerate([i["title"] for i in cached_data if "title" in i], 1))
-    if request.method == "POST":
-        if form.validate_on_submit():
-            form.populate_obj(updated_virtual_assistant)
-            updated_virtual_assistant.name = form.name.data
-            updated_virtual_assistant.last_name = form.last_name.data
-            updated_virtual_assistant.job = form.job.data
-            if "photo" in request.files:
-                photo = request.files["photo"]
-                filename = photos.save(form.photo.data)
-                url = photos.url(filename)
-                updated_virtual_assistant.image_url = url
-                updated_virtual_assistant.image_filename = filename
-            db.session.add(updated_virtual_assistant)
-            db.session.commit()
-            return redirect("/")
-        else:
-            print(form.errors.items())
-            return "something is wrong"
-    return render_template("UpdateVirtualAssistant.html", updated_virtual_assistant=updated_virtual_assistant, form=form)
 
 if __name__ == "__main__":
     app.run(debug=True)
