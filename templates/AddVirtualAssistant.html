@@ -1,5 +1,15 @@
 <html>
     <body>
+        <title>Virtual Assistants</title>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <ul class=flashes>
+                {% for message in messages %}
+                  <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+              {% endif %}
+            {% endwith %}
         <form method="POST"  enctype="multipart/form-data">
             {{ form.csrf_token }}
             {{ form.name }}</br></br>
@@ -10,11 +20,13 @@
         </form>
 
             {% for assistant in virtual_assistants %}
-              <p><a href="{{ url_for("update_virtual_assistant", id=assistant.id) }}">{{assistant.name}}</a></p>
-              <p>{{assistant.last_name}}</p>
-              <p>{{assistant.image_url}}</p>
-              <p>{{assistant.job}}</p>
+              <p>name: {{assistant.name}}</p>
+              <p>last name: {{assistant.last_name}}</p>
+              <p>job: {{assistant.job}}</p>
               <p><img  class="img-responsive watch-right" alt="not found" src="{{assistant.image_url}}"/></p>
+              <p><a href="{{ url_for("update_virtual_assistant", id=assistant.id) }}">update</a></p>
+              <p><a href="{{ url_for("delete_virtual_assistant", id=assistant.id) }}">delete</a></p>
+              <br>
             {% endfor %}
     </body>
 </html>

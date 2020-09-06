@@ -40,3 +40,5 @@ class DemoSeeder(Seeder):
         for assistant in faker.create(5):
           print("Adding VirtualAssistant: %s" % assistant)
           self.db.session.add(assistant)
+
+        #flask seed run

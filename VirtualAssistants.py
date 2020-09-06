@@ -1,8 +1,6 @@
 import os
 
-from flask import redirect
-
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
 
 from forms import AddVirtualAssistant, UpdateVirtualAssistant
@@ -15,6 +13,7 @@ from flask_uploads import UploadSet, IMAGES, configure_uploads
 from PIL import Image
 from werkzeug.utils import secure_filename
 
+from flask_migrate import Migrate
 
 import requests
 import json
@@ -53,10 +52,12 @@ seeder.init_app(app, db)
 
 cache = Cache(app)
 
+migrate = Migrate(app, db)
 
 class VirtualAssistant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(30))
+    email = db.Column(db.String(30))#added as a test for migrations check
     last_name = db.Column(db.String(30))
     job = db.Column(db.String(30))
     image_filename = db.Column(db.String)
@@ -103,7 +104,8 @@ def add_virtual_assistant():
             new_virtual_assistant = VirtualAssistant(name=form.name.data, last_name= form.last_name.data, job=job_title, image_filename=filename, image_url=url)
             db.session.add(new_virtual_assistant)
             db.session.commit()
-            return "new virtual assistant has been added"
+            flash("new virtual assistant has been added")
+            return redirect("/")
          else:
             print(form.errors.items())
             return "something is wrong"
@@ -132,37 +134,23 @@ def update_virtual_assistant(id):
                 updated_virtual_assistant.image_filename = filename
                 updated_virtual_assistant.job = job_title
             db.session.commit()
+            flash("the virtual assistant has been updated")
             return redirect("/")
         else:
             print(form.errors.items())
             return "something is wrong"
     return render_template("UpdateVirtualAssistant.html", updated_virtual_assistant=updated_virtual_assistant, form=form)
 
-# @app.route("/update/<int:id>/", methods=["GET", "POST"])
-# def update_virtual_assistant(id):
-#     cached_data = cache_json_data()
-#     updated_virtual_assistant = VirtualAssistant.query.get_or_404(id)
-#     form = UpdateVirtualAssistant(obj=updated_virtual_assistant)
-#     form.job.choices = list(enumerate([i["title"] for i in cached_data if "title" in i], 1))
-#     if request.method == "POST":
-#         if form.validate_on_submit():
-#             form.populate_obj(updated_virtual_assistant)
-#             updated_virtual_assistant.name = form.name.data
-#             updated_virtual_assistant.last_name = form.last_name.data
-#             updated_virtual_assistant.job = form.job.data
-#             if "photo" in request.files:
-#                 photo = request.files["photo"]
-#                 filename = photos.save(form.photo.data)
-#                 url = photos.url(filename)
-#                 updated_virtual_assistant.image_url = url
-#                 updated_virtual_assistant.image_filename = filename
-#             db.session.add(updated_virtual_assistant)
-#             db.session.commit()
-#             return redirect("/")
-#         else:
-#             print(form.errors.items())
-#             return "something is wrong"
-#     return render_template("UpdateVirtualAssistant.html", updated_virtual_assistant=updated_virtual_assistant, form=form)
+@app.route("/delete/<int:id>/", methods=["GET"])
+def delete_virtual_assistant(id):
+    object = VirtualAssistant.query.get_or_404(id)
+    db.session.delete(object)
+    db.session.commit()
+    flash("the virtual assistant has been deleted")
+    return redirect("/")
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
