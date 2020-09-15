@@ -143,8 +143,8 @@ def update_virtual_assistant(id):
 
 @app.route("/delete/<int:id>/", methods=["GET"])
 def delete_virtual_assistant(id):
-    object = VirtualAssistant.query.get_or_404(id)
-    db.session.delete(object)
+    deleted_assistant = VirtualAssistant.query.get_or_404(id)
+    db.session.delete(deleted_assistant)
     db.session.commit()
     flash("the virtual assistant has been deleted")
     return redirect("/")
